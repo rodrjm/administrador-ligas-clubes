@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(ADMIN_LIGA)
+  leagueId  String?  @db.VarChar(191)
+  clubId    String?  @db.VarChar(191)
+  league    League?  @relation("LeagueUsers", fields: [leagueId], references: [id])
+  club      Club?    @relation("ClubUsers", fields: [clubId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN_APP
+  ADMIN_LIGA
+  ADMIN_CLUB
+}
+
+model League {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  logoUrl     String?
+  description String?
+  clubs       Club[]
+  matches     Match[]
+  users       User[]   @relation("LeagueUsers")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Club {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  logoUrl     String?
+  description String?
+  leagueId    String?
+  league      League?  @relation(fields: [leagueId], references: [id])
+  teams       Team[]
+  users       User[]   @relation("ClubUsers")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  sport       Sport
+  clubId      String
+  club        Club     @relation(fields: [clubId], references: [id])
+  players     Player[]
+  homeMatches Match[]  @relation("homeTeam")
+  awayMatches Match[]  @relation("awayTeam")
+}
+
+enum Sport {
+  FUTBOL
+  BASQUET
+  HANDBALL
+  HOCKEY
+}
+
+model Player {
+  id     String  @id @default(cuid())
+  name   String
+  dorsal Int?
+  teamId String
+  team   Team    @relation(fields: [teamId], references: [id])
+  events Event[]
+}
+
+model Match {
+  id         String      @id @default(cuid())
+  leagueId   String?
+  league     League?     @relation(fields: [leagueId], references: [id])
+  sport      Sport
+  date       DateTime
+  location   String?
+  homeTeamId String
+  awayTeamId String
+  homeTeam   Team        @relation("homeTeam", fields: [homeTeamId], references: [id])
+  awayTeam   Team        @relation("awayTeam", fields: [awayTeamId], references: [id])
+  status     MatchStatus @default(SCHEDULED)
+  scoreHome  Int         @default(0)
+  scoreAway  Int         @default(0)
+  events     Event[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+}
+
+model Event {
+  id        String    @id @default(cuid())
+  matchId   String
+  match     Match     @relation(fields: [matchId], references: [id])
+  minute    Int?
+  quarter   Int? // para básquet
+  type      EventType
+  value     Int? // puntos (1/2/3) u otros
+  playerId  String?
+  player    Player?   @relation(fields: [playerId], references: [id])
+  createdAt DateTime  @default(now())
+}
+
+enum EventType {
+  // Fútbol/Hockey/Handball
+  GOL
+  AMARILLA
+  ROJA
+  SANCION_2M // Handball
+  // Básquet
+  PUNTO_1
+  PUNTO_2
+  PUNTO_3
+}
