@@ -11,8 +11,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Instalar dependencias
-RUN npm install --only=production
+# Instalar TODAS las dependencias (incluyendo devDependencies para compilar)
+RUN npm install
 
 # Generar cliente de Prisma
 RUN npx prisma generate
@@ -22,6 +22,9 @@ COPY . .
 
 # Compilar TypeScript
 RUN npm run build
+
+# Limpiar dependencias de desarrollo y reinstalar solo producción
+RUN npm prune --production
 
 # Exponer puerto
 EXPOSE 3001
