@@ -16,10 +16,16 @@ const registerSchema = z.object({
 
 router.post('/register', async (req, res) => {
   const parsed = registerSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json(parsed.error.flatten());
+  if (!parsed.success) {
+    res.status(400).json(parsed.error.flatten());
+    return;
+  }
   const { email, password, role, leagueId, clubId } = parsed.data;
   const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return res.status(409).json({ message: 'Email already in use' });
+  if (existing) {
+    res.status(409).json({ message: 'Email already in use' });
+    return;
+  }
   const hash = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({ data: { email, password: hash, role, leagueId, clubId } });
   const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET || 'change-me', {
@@ -32,12 +38,21 @@ const loginSchema = z.object({ email: z.string().email(), password: z.string().m
 
 router.post('/login', async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json(parsed.error.flatten());
+  if (!parsed.success) {
+    res.status(400).json(parsed.error.flatten());
+    return;
+  }
   const { email, password } = parsed.data;
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+  if (!user) {
+    res.status(401).json({ message: 'Invalid credentials' });
+    return;
+  }
   const ok = await bcrypt.compare(password, user.password);
-  if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
+  if (!ok) {
+    res.status(401).json({ message: 'Invalid credentials' });
+    return;
+  }
   const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET || 'change-me', {
     expiresIn: '7d',
   });

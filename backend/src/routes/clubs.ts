@@ -20,7 +20,10 @@ router.get('/', async (_req, res) => {
 
 router.post('/', requireAuth, async (req, res) => {
   const parsed = clubSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json(parsed.error.flatten());
+  if (!parsed.success) {
+    res.status(400).json(parsed.error.flatten());
+    return;
+  }
   const { name, slug, logoUrl, description, leagueId } = parsed.data;
   const club = await prisma.club.create({ 
     data: { 
@@ -36,13 +39,19 @@ router.post('/', requireAuth, async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   const club = await prisma.club.findUnique({ where: { id: req.params.id } });
-  if (!club) return res.status(404).json({ message: 'Club not found' });
+  if (!club) {
+    res.status(404).json({ message: 'Club not found' });
+    return;
+  }
   res.json(club);
 });
 
 router.put('/:id', requireAuth, async (req, res) => {
   const parsed = clubSchema.partial().safeParse(req.body);
-  if (!parsed.success) return res.status(400).json(parsed.error.flatten());
+  if (!parsed.success) {
+    res.status(400).json(parsed.error.flatten());
+    return;
+  }
   try {
     const updateData: any = {};
     if (parsed.data.name) updateData.name = parsed.data.name;

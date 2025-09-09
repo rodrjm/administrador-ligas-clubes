@@ -21,20 +21,29 @@ router.get('/', async (_req, res) => {
 
 router.post('/', requireAuth, async (req, res) => {
   const parsed = matchSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json(parsed.error.flatten());
+  if (!parsed.success) {
+    res.status(400).json(parsed.error.flatten());
+    return;
+  }
   const match = await prisma.match.create({ data: parsed.data });
   res.status(201).json(match);
 });
 
 router.get('/:id', async (req, res) => {
   const match = await prisma.match.findUnique({ where: { id: req.params.id } });
-  if (!match) return res.status(404).json({ message: 'Match not found' });
+  if (!match) {
+    res.status(404).json({ message: 'Match not found' });
+    return;
+  }
   res.json(match);
 });
 
 router.put('/:id', requireAuth, async (req, res) => {
   const parsed = matchSchema.partial().safeParse(req.body);
-  if (!parsed.success) return res.status(400).json(parsed.error.flatten());
+  if (!parsed.success) {
+    res.status(400).json(parsed.error.flatten());
+    return;
+  }
   try {
     const updateData: any = {};
     if (parsed.data.leagueId) updateData.leagueId = parsed.data.leagueId;

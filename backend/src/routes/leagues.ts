@@ -19,7 +19,10 @@ router.get('/', async (_req, res) => {
 
 router.post('/', requireAuth, async (req, res) => {
   const parsed = leagueSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json(parsed.error.flatten());
+  if (!parsed.success) {
+    res.status(400).json(parsed.error.flatten());
+    return;
+  }
   const { name, slug, logoUrl, description } = parsed.data;
   const league = await prisma.league.create({ 
     data: { 
@@ -41,13 +44,19 @@ router.get('/:id', async (req, res) => {
       ]
     } 
   });
-  if (!league) return res.status(404).json({ message: 'League not found' });
+  if (!league) {
+    res.status(404).json({ message: 'League not found' });
+    return;
+  }
   res.json(league);
 });
 
 router.put('/:id', requireAuth, async (req, res) => {
   const parsed = leagueSchema.partial().safeParse(req.body);
-  if (!parsed.success) return res.status(400).json(parsed.error.flatten());
+  if (!parsed.success) {
+    res.status(400).json(parsed.error.flatten());
+    return;
+  }
   try {
     const updateData: any = {};
     if (parsed.data.name) updateData.name = parsed.data.name;
