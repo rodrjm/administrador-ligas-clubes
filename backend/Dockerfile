@@ -14,17 +14,17 @@ COPY prisma ./prisma/
 # Instalar TODAS las dependencias (incluyendo devDependencies para compilar)
 RUN npm install
 
-# Generar cliente de Prisma
-RUN npx prisma generate
-
 # Copiar código fuente
 COPY . .
+
+# Generar cliente de Prisma (después de copiar el código)
+RUN npx prisma generate
 
 # Compilar TypeScript
 RUN npm run build
 
-# Limpiar dependencias de desarrollo y reinstalar solo producción
-RUN npm prune --production
+# Limpiar dependencias de desarrollo pero mantener Prisma
+RUN npm uninstall typescript @types/node @types/express @types/bcryptjs @types/jsonwebtoken nodemon ts-node prisma
 
 # Exponer puerto
 EXPOSE 3001
