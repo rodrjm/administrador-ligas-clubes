@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Navigation = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
 
   const navItems = [
