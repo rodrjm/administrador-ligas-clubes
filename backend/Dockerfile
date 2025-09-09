@@ -34,4 +34,4 @@ ENV NODE_ENV=production
 ENV PORT=3001
 
 # Comando para ejecutar la aplicación
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npx prisma generate && npm start"]
