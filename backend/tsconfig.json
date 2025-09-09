@@ -30,14 +30,14 @@
     "emitDecoratorMetadata": true,
     "types": ["node"]
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "tests",
-    "**/*.test.ts",
-    "**/*.spec.ts"
+  "files": [
+    "src/index.ts",
+    "src/app.ts",
+    "src/db.ts",
+    "src/middleware/auth.ts",
+    "src/routes/auth.ts",
+    "src/routes/leagues.ts",
+    "src/routes/clubs.ts",
+    "src/routes/matches.ts"
   ]
 }
